@@ -11,8 +11,12 @@ async function decodeImage(buffer, contentType) {
         const jimpImg = await Jimp.read(buffer);
         const bmp = make(jimpImg.bitmap.width, jimpImg.bitmap.height);
         const ctx = bmp.getContext('2d');
-        const imageData = ctx.createImageData(jimpImg.bitmap.width, jimpImg.bitmap.height);
-        imageData.data.set(jimpImg.bitmap.data);
+        // Pureimage's putImageData expects an object with width, height, and data (Uint8ClampedArray)
+        const imageData = {
+            width: jimpImg.bitmap.width,
+            height: jimpImg.bitmap.height,
+            data: new Uint8ClampedArray(jimpImg.bitmap.data)
+        };
         ctx.putImageData(imageData, 0, 0);
         return bmp;
     } else {
