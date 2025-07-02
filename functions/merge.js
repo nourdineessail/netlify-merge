@@ -81,9 +81,14 @@ export const handler = async ({ queryStringParameters }) => {
         const totalH = scaledTop.height + BARH + scaledBot.height;
         const canvas = make(WIDTH, totalH);
         const ctxCanvas = canvas.getContext('2d');
-        ctxCanvas.drawImage(scaledTop, 0, 0);
+
+        // Draw scaled top image
+        ctxCanvas.drawImage(imgTop, 0, 0, imgTop.width, imgTop.height, 0, 0, WIDTH, scaledTop.height);
+        // Draw bar
         ctxCanvas.drawImage(bar, 0, scaledTop.height);
-        ctxCanvas.drawImage(scaledBot, 0, scaledTop.height + BARH);
+        // Draw scaled bottom image
+        ctxCanvas.drawImage(imgBot, 0, 0, imgBot.width, imgBot.height, 0, scaledTop.height + BARH, WIDTH, scaledBot.height);
+
         // output
         const chunks = [];
         await encodePNGToStream(canvas, { write: c => chunks.push(c) });
