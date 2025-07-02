@@ -1,5 +1,6 @@
-import { decodePNG, makeEmptyPng, registerFont, encodePNGToStream } from "pureimage";
+import { makeEmptyPng, registerFont, encodePNGToStream, decodePNGFromStream } from "pureimage";
 import fetch from "node-fetch";
+import { Readable } from "stream";
 
 export const handler = async ({ queryStringParameters }) => {
   const { top, bottom, text } = queryStringParameters || {};
@@ -10,8 +11,9 @@ export const handler = async ({ queryStringParameters }) => {
     fetch(top).then(r=>r.arrayBuffer()).then(b=>Buffer.from(b)),
     fetch(bottom).then(r=>r.arrayBuffer()).then(b=>Buffer.from(b)),
   ]);
-  const imgTop = await decodePNG(bufTop);
-  const imgBot = await decodePNG(bufBot);
+  // decode PNGs from streams
+  const imgTop = await decodePNGFromStream(Readable.from(bufTop));
+  const imgBot = await decodePNGFromStream(Readable.from(bufBot));
   // resize (naive nearest-neighbor)
   const WIDTH = 1080, BARH = 200;
   const scaledTop = makeEmptyPng(WIDTH, Math.floor(imgTop.height * WIDTH / imgTop.width));
