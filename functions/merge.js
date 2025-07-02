@@ -1,6 +1,24 @@
-import { make, registerFont, encodePNGToStream, decodePNGFromStream, decodeJPEGFromStream } from "pureimage";
+import { make, registerFont, encodePNGToStream, decodePNGFromStream } from "pureimage";
 import fetch from "node-fetch";
 import { Readable } from "stream";
+import Jimp from "jimp";
+
+async function decodeImage(buffer, contentType) {
+    if (contentType.includes("png")) {
+        return await decodePNGFromStream(Readable.from(buffer));
+    } else if (contentType.includes("jpeg")) {
+        // Use Jimp for JPEGs, then convert to pureimage bitmap
+        const jimpImg = await Jimp.read(buffer);
+        const bmp = make(jimpImg.bitmap.width, jimpImg.bitmap.height);
+        const ctx = bmp.getContext('2d');
+        const imageData = ctx.createImageData(jimpImg.bitmap.width, jimpImg.bitmap.height);
+        imageData.data.set(jimpImg.bitmap.data);
+        ctx.putImageData(imageData, 0, 0);
+        return bmp;
+    } else {
+        throw new Error("Unsupported image type");
+    }
+}
 
 async function fetchImageBuffer(url) {
     const res = await fetch(url);
@@ -18,18 +36,13 @@ export const handler = async ({ queryStringParameters }) => {
     if (!top || !bottom || !text) return { statusCode: 400, body: "Missing params" };
 
     try {
-        // load images with validation
         const [imgTopData, imgBotData] = await Promise.all([
             fetchImageBuffer(top),
             fetchImageBuffer(bottom),
         ]);
-        // decode images based on type
-        const imgTop = imgTopData.contentType.includes("png")
-            ? await decodePNGFromStream(Readable.from(imgTopData.buffer))
-            : await decodeJPEGFromStream(Readable.from(imgTopData.buffer));
-        const imgBot = imgBotData.contentType.includes("png")
-            ? await decodePNGFromStream(Readable.from(imgBotData.buffer))
-            : await decodeJPEGFromStream(Readable.from(imgBotData.buffer));
+        const imgTop = await decodeImage(imgTopData.buffer, imgTopData.contentType);
+        const imgBot = await decodeImage(imgBotData.buffer, imgBotData.contentType);
+
         // Validate images
         if (!imgTop || !imgTop.width || !imgTop.height) {
             throw new Error("Failed to decode top image");
