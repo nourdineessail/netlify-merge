@@ -1,5 +1,5 @@
 // netlify/functions/merge.js
-const sharp = require("sharp");
+const Jimp = require("jimp");
 
 exports.handler = async (event) => {
   const { top, bottom, text } = event.queryStringParameters || {};
@@ -8,61 +8,51 @@ exports.handler = async (event) => {
   }
 
   try {
-    // 1) Fetch the two images using native fetch
-    const [respTop, respBot] = await Promise.all([
-      fetch(top),
-      fetch(bottom),
-    ]);
-    if (!respTop.ok || !respBot.ok) {
-      throw new Error("Failed to download one of the images");
-    }
-    const [bufTop, bufBot] = await Promise.all([
-      respTop.arrayBuffer().then((ab) => Buffer.from(ab)),
-      respBot.arrayBuffer().then((ab) => Buffer.from(ab)),
+    // 1) Load images
+    const [imgTop, imgBot] = await Promise.all([
+      Jimp.read(top),
+      Jimp.read(bottom),
     ]);
 
-    // 2) Create an SVG bar with your text
-    const svgBar = `
-      <svg width="1080" height="200" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#0d1b2a"/>
-        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-              font-size="48" fill="#ffffff" font-family="Arial, sans-serif">
-          ${text.replace(/&/g, "&amp;")}
-        </text>
-      </svg>`;
+    // 2) Resize both to width 1080 (auto height)
+    imgTop.resize(1080, Jimp.AUTO);
+    imgBot.resize(1080, Jimp.AUTO);
 
-    // 3) Resize & buffer each part
-    const topBuf  = await sharp(bufTop).resize(1080).png().toBuffer();
-    const barBuf  = await sharp(Buffer.from(svgBar)).png().toBuffer();
-    const botBuf  = await sharp(bufBot).resize(1080).png().toBuffer();
+    // 3) Create the bar
+    const barHeight = 200;
+    const bar = new Jimp(1080, barHeight, 0x0d1b2aff); // ARGB hex
 
-    // 4) Get heights so we can calculate total canvas height
-    const { height: topH } = await sharp(topBuf).metadata();
-    const { height: botH } = await sharp(botBuf).metadata();
-    const barH = 200; // we set SVG height to 200
-
-    // 5) Composite them vertically
-    const finalBuf = await sharp({
-      create: {
-        width: 1080,
-        height: topH + barH + botH,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
+    // 4) Load a font and print the text centered
+    //    you can choose any built-in Jimp font
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
+    bar.print(
+      font,
+      0,
+      0,
+      {
+        text: text,
+        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
       },
-    })
-      .composite([
-        { input: topBuf, top: 0,           left: 0 },
-        { input: barBuf, top: topH,       left: 0 },
-        { input: botBuf, top: topH + barH, left: 0 },
-      ])
-      .png()
-      .toBuffer();
+      bar.bitmap.width,
+      bar.bitmap.height
+    );
 
-    // 6) Return as a base64-encoded PNG so Make can ingest it
+    // 5) Create a blank tall image to composite into
+    const totalHeight = imgTop.bitmap.height + barHeight + imgBot.bitmap.height;
+    const canvas = new Jimp(1080, totalHeight, 0x00000000);
+
+    // 6) Composite top, bar, bottom
+    canvas.composite(imgTop, 0, 0);
+    canvas.composite(bar,   0, imgTop.bitmap.height);
+    canvas.composite(imgBot, 0, imgTop.bitmap.height + barHeight);
+
+    // 7) Get buffer and return as base64
+    const outBuf = await canvas.getBufferAsync(Jimp.MIME_PNG);
     return {
       statusCode: 200,
       headers: { "Content-Type": "image/png" },
-      body: finalBuf.toString("base64"),
+      body: outBuf.toString("base64"),
       isBase64Encoded: true,
     };
   } catch (err) {
