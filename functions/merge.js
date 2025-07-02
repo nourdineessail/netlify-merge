@@ -1,5 +1,4 @@
-// netlify/functions/merge.js
-import { decodePNGFromBuffer, makeEmptyPng, registerFont, encodePNGToStream } from "pureimage";
+import { decodePNG, makeEmptyPng, registerFont, encodePNGToStream } from "pureimage";
 import fetch from "node-fetch";
 
 export const handler = async ({ queryStringParameters }) => {
@@ -11,8 +10,8 @@ export const handler = async ({ queryStringParameters }) => {
     fetch(top).then(r=>r.arrayBuffer()).then(b=>Buffer.from(b)),
     fetch(bottom).then(r=>r.arrayBuffer()).then(b=>Buffer.from(b)),
   ]);
-  const imgTop = await decodePNGFromBuffer(bufTop);
-  const imgBot = await decodePNGFromBuffer(bufBot);
+  const imgTop = await decodePNG(bufTop);
+  const imgBot = await decodePNG(bufBot);
   // resize (naive nearest-neighbor)
   const WIDTH = 1080, BARH = 200;
   const scaledTop = makeEmptyPng(WIDTH, Math.floor(imgTop.height * WIDTH / imgTop.width));
