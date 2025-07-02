@@ -39,29 +39,34 @@ export const handler = async ({ queryStringParameters }) => {
         }
         const WIDTH = 1080, BARH = 200;
         const scaledTop = make(WIDTH, Math.floor(imgTop.height * WIDTH / imgTop.width));
-        if (!scaledTop.context) throw new Error("scaledTop.context is undefined");
-        scaledTop.context.drawImage(imgTop, 0, 0, WIDTH, scaledTop.height);
+        const ctxTop = scaledTop.getContext('2d');
+        if (!ctxTop) throw new Error("scaledTop.getContext('2d') is undefined");
+        ctxTop.drawImage(imgTop, 0, 0, WIDTH, scaledTop.height);
 
         const scaledBot = make(WIDTH, Math.floor(imgBot.height * WIDTH / imgBot.width));
-        if (!scaledBot.context) throw new Error("scaledBot.context is undefined");
-        scaledBot.context.drawImage(imgBot, 0, 0, WIDTH, scaledBot.height);
+        const ctxBot = scaledBot.getContext('2d');
+        if (!ctxBot) throw new Error("scaledBot.getContext('2d') is undefined");
+        ctxBot.drawImage(imgBot, 0, 0, WIDTH, scaledBot.height);
 
         // bar
         const bar = make(WIDTH, BARH);
-        bar.context.fillStyle = "#0d1b2a";
-        bar.context.fillRect(0, 0, WIDTH, BARH);
+        const ctxBar = bar.getContext('2d');
+        ctxBar.fillStyle = "#0d1b2a";
+        ctxBar.fillRect(0, 0, WIDTH, BARH);
         registerFont("Arial.ttf", "Arial");
-        bar.context.fillStyle = "#fff";
-        bar.context.textAlign = "center";
-        bar.context.textBaseline = "middle";
-        bar.context.font = "48px Arial";
-        bar.context.fillText(text, WIDTH / 2, BARH / 2);
+        ctxBar.fillStyle = "#fff";
+        ctxBar.textAlign = "center";
+        ctxBar.textBaseline = "middle";
+        ctxBar.font = "48px Arial";
+        ctxBar.fillText(text, WIDTH / 2, BARH / 2);
+
         // composite
         const totalH = scaledTop.height + BARH + scaledBot.height;
         const canvas = make(WIDTH, totalH);
-        canvas.context.drawImage(scaledTop, 0, 0);
-        canvas.context.drawImage(bar, 0, scaledTop.height);
-        canvas.context.drawImage(scaledBot, 0, scaledTop.height + BARH);
+        const ctxCanvas = canvas.getContext('2d');
+        ctxCanvas.drawImage(scaledTop, 0, 0);
+        ctxCanvas.drawImage(bar, 0, scaledTop.height);
+        ctxCanvas.drawImage(scaledBot, 0, scaledTop.height + BARH);
         // output
         const chunks = [];
         await encodePNGToStream(canvas, { write: c => chunks.push(c) });
