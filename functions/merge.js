@@ -1,14 +1,16 @@
-import { makeEmptyPng, registerFont, encodePNGToStream, decodePNGFromStream } from "pureimage";
+import { makeEmptyPng, registerFont, encodePNGToStream, decodePNGFromStream, decodeJPEGFromStream } from "pureimage";
 import fetch from "node-fetch";
 import { Readable } from "stream";
 
-async function fetchPngBuffer(url) {
+async function fetchImageBuffer(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch image: ${url} (${res.status})`);
   const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("image/png")) throw new Error(`URL does not point to a PNG image: ${url}`);
+  if (!contentType.includes("image/png") && !contentType.includes("image/jpeg")) {
+    throw new Error(`URL does not point to a PNG or JPEG image: ${url}`);
+  }
   const arrayBuffer = await res.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+  return { buffer: Buffer.from(arrayBuffer), contentType };
 }
 
 export const handler = async ({ queryStringParameters }) => {
@@ -17,13 +19,17 @@ export const handler = async ({ queryStringParameters }) => {
 
   try {
     // load images with validation
-    const [bufTop, bufBot] = await Promise.all([
-      fetchPngBuffer(top),
-      fetchPngBuffer(bottom),
+    const [imgTopData, imgBotData] = await Promise.all([
+      fetchImageBuffer(top),
+      fetchImageBuffer(bottom),
     ]);
-    // decode PNGs from streams
-    const imgTop = await decodePNGFromStream(Readable.from(bufTop));
-    const imgBot = await decodePNGFromStream(Readable.from(bufBot));
+    // decode images based on type
+    const imgTop = imgTopData.contentType.includes("png")
+      ? await decodePNGFromStream(Readable.from(imgTopData.buffer))
+      : await decodeJPEGFromStream(Readable.from(imgTopData.buffer));
+    const imgBot = imgBotData.contentType.includes("png")
+      ? await decodePNGFromStream(Readable.from(imgBotData.buffer))
+      : await decodeJPEGFromStream(Readable.from(imgBotData.buffer));
     // ...rest of your code...
     const WIDTH = 1080, BARH = 200;
     const scaledTop = makeEmptyPng(WIDTH, Math.floor(imgTop.height * WIDTH / imgTop.width));
