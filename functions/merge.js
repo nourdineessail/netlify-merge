@@ -30,12 +30,22 @@ export const handler = async ({ queryStringParameters }) => {
         const imgBot = imgBotData.contentType.includes("png")
             ? await decodePNGFromStream(Readable.from(imgBotData.buffer))
             : await decodeJPEGFromStream(Readable.from(imgBotData.buffer));
-        // ...rest of your code...
+        // Validate images
+        if (!imgTop || !imgTop.width || !imgTop.height) {
+            throw new Error("Failed to decode top image");
+        }
+        if (!imgBot || !imgBot.width || !imgBot.height) {
+            throw new Error("Failed to decode bottom image");
+        }
         const WIDTH = 1080, BARH = 200;
         const scaledTop = make(WIDTH, Math.floor(imgTop.height * WIDTH / imgTop.width));
+        if (!scaledTop.context) throw new Error("scaledTop.context is undefined");
         scaledTop.context.drawImage(imgTop, 0, 0, WIDTH, scaledTop.height);
+
         const scaledBot = make(WIDTH, Math.floor(imgBot.height * WIDTH / imgBot.width));
+        if (!scaledBot.context) throw new Error("scaledBot.context is undefined");
         scaledBot.context.drawImage(imgBot, 0, 0, WIDTH, scaledBot.height);
+
         // bar
         const bar = make(WIDTH, BARH);
         bar.context.fillStyle = "#0d1b2a";
