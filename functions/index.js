@@ -7,7 +7,8 @@ const path = require("path");
 // keep the font in your repo e.g. /fonts/Inter-Bold.ttf
 const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
                 .toString("base64");
-
+console.log("[FONT] exists:", fs.existsSync(fontPath));            // ✅ should be true
+console.log("[FONT] size  :", fs.statSync(fontPath).size, "bytes");
 /**
  * Lambda signature
  * - event.queryStringParameters holds the ?imgUrl= & ?title=
