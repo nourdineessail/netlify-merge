@@ -7,6 +7,9 @@ const path = require("path");
 // keep the font in your repo e.g. /fonts/Inter-Bold.ttf
 const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
                 .toString("base64");
+
+const fontPath = path.join("./fonts", "Inter-Bold.ttf");
+
 console.log("[FONT] exists:", fs.existsSync(fontPath));            // ✅ should be true
 console.log("[FONT] size  :", fs.statSync(fontPath).size, "bytes");
 /**
