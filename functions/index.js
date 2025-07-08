@@ -7,7 +7,7 @@ const path = require("path");
 process.env.FONTCONFIG_FILE = path.join(__dirname, "fonts", "fonts.conf");
 process.env.FONTCONFIG_PATH = path.dirname(process.env.FONTCONFIG_FILE);
 
-const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
+const inter = fs.readFileSync(path.join(__dirname, "fonts", "Inter-Bold.ttf"))
                 .toString("base64");
 
 console.log("Does FONTCONFIG_FILE exist?", fs.existsSync(process.env.FONTCONFIG_FILE));
