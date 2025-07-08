@@ -1,18 +1,14 @@
 {
-  "name": "netlify",
+  "name": "image-banner-api",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "jimp": "^0.16.1",
-    "node-fetch": "^2.7.0",
-    "pureimage": "^0.4.18",
-    "sharp": "^0.34.2"
+    "axios": "^1.6.7",
+    "express": "^4.19.0",
+    "sharp":  "^0.33.0"
   }
 }
