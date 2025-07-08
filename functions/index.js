@@ -4,14 +4,11 @@ const sharp  = require("sharp");
 const fs   = require("fs");
 const path = require("path");
 
-// keep the font in your repo e.g. /fonts/Inter-Bold.ttf
+process.env.FONTCONFIG_FILE = path.join(__dirname, "fonts.conf");
+
 const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
                 .toString("base64");
 
-const fontPath = path.join("./fonts", "Inter-Bold.ttf");
-
-console.log("[FONT] exists:", fs.existsSync(fontPath));            // ✅ should be true
-console.log("[FONT] size  :", fs.statSync(fontPath).size, "bytes");
 /**
  * Lambda signature
  * - event.queryStringParameters holds the ?imgUrl= & ?title=
@@ -42,10 +39,9 @@ exports.handler = async (event) => {
             font-weight:700;
             src:url(data:font/ttf;base64,${inter}) format('truetype');
           }
-          text { font-family:'InterBold',sans-serif }
+          text{font-family:'InterBold'}
         </style>
       </defs>
-
       <rect width="100%" height="100%" fill="#0a557c"/>
       <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
             font-size="${Math.round(bannerH*0.45)}" fill="#fff">
