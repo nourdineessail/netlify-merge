@@ -4,7 +4,7 @@ const sharp  = require("sharp");
 const fs   = require("fs");
 const path = require("path");
 
-process.env.FONTCONFIG_FILE = path.join(__dirname, "fonts.conf");
+process.env.FONTCONFIG_FILE = path.join("./fonts.conf");
 
 const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
                 .toString("base64");
