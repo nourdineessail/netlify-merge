@@ -2,3 +2,4 @@
   directory = "functions"         # default is "netlify/functions", so declare if different
   node_bundler = "esbuild"        # bundles external deps
   external_node_modules = ["sharp","axios"]  # ensures Sharp binaries are shipped
+  included_files = ["fonts/**.ttf"]

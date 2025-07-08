@@ -1,6 +1,12 @@
 // functions/generate.js  (CommonJS – simpler on Netlify)
 const axios  = require("axios");
 const sharp  = require("sharp");
+const fs   = require("fs");
+const path = require("path");
+
+// keep the font in your repo e.g. /fonts/Inter-Bold.ttf
+const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
+                .toString("base64");
 
 /**
  * Lambda signature
@@ -24,14 +30,24 @@ exports.handler = async (event) => {
     /* 2 – banner SVG ----------------------------------------------------------- */
     const bannerH = Math.round(height * 0.15);
     const bannerSVG = `
-      <svg width="${width}" height="${bannerH}">
-        <rect x="0" y="0" width="100%" height="100%" fill="#0a557c"/>
-        <text x="50%" y="50%" alignment-baseline="middle" text-anchor="middle"
-              font-family="sans-serif" font-weight="700"
-              font-size="${Math.round(bannerH * 0.45)}" fill="#fff">
-          ${title.replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))}
-        </text>
-      </svg>`;
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${bannerH}">
+      <defs>
+        <style>
+          @font-face{
+            font-family:'InterBold';
+            font-weight:700;
+            src:url(data:font/ttf;base64,${inter}) format('truetype');
+          }
+          text { font-family:'InterBold',sans-serif }
+        </style>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#0a557c"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+            font-size="${Math.round(bannerH*0.45)}" fill="#fff">
+        ${escape(title)}
+      </text>
+    </svg>`;
     const bannerBuf = Buffer.from(bannerSVG);
 
     /* 3 – compose ------------------------------------------------------------- */
