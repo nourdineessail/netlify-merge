@@ -60,7 +60,7 @@ exports.handler = async (event) => {
         </defs>
         <rect width="100%" height="100%" fill="#0a557c"/>
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-              font-size="${fontSize}" fill="#fff">
+            dy=".30em"  font-size="${fontSize}" fill="#fff">
           ${safeTitle}
         </text>
       </svg>`;
