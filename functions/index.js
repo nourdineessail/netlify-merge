@@ -4,13 +4,15 @@ const sharp  = require("sharp");
 const fs   = require("fs");
 const path = require("path");
 
-process.env.FONTCONFIG_FILE = path.resolve(__dirname, "../fonts.conf");
+process.env.FONTCONFIG_FILE = path.join(__dirname, "fonts", "fonts.conf");
+process.env.FONTCONFIG_PATH = path.dirname(process.env.FONTCONFIG_FILE);
 
 const inter = fs.readFileSync(path.join("./fonts", "Inter-Bold.ttf"))
                 .toString("base64");
 
-console.log("FONTCONFIG_FILE:", process.env.FONTCONFIG_FILE);
-console.log("Does fonts.conf exist?", fs.existsSync(process.env.FONTCONFIG_FILE));
+console.log("Does FONTCONFIG_FILE exist?", fs.existsSync(process.env.FONTCONFIG_FILE));
+console.log("Font dir listing:", fs.readdirSync(path.join(__dirname, "fonts")));
+
 /**
  * Lambda signature
  * - event.queryStringParameters holds the ?imgUrl= & ?title=
