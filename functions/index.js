@@ -75,13 +75,13 @@ exports.handler = async (event) => {
         { input: bannerBuf, top: height,          left: 0 },
         { input: topImg,    top: height + bannerH, left: 0 }
       ])
-      .png()
+      .jpeg()
       .toBuffer();
 
     /* 4 – return binary ------------------------------------------------------ */
     return {
       statusCode: 200,
-      headers: { "Content-Type": "image/png" },
+      headers: { "Content-Type": "image/jpeg" },
       isBase64Encoded: true,
       body: out.toString("base64"),
     };
