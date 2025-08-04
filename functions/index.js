@@ -19,7 +19,7 @@ const htmlEscape = (str) =>
 
 /* -------------------------------------------------------------------------- */
 exports.handler = async (event) => {
-  const { imgUrl, title } = event.queryStringParameters || {};
+  const { imgUrl, title, bannerColor = "#0a557c" } = event.queryStringParameters || {};
 
   if (!imgUrl || !title) {
     return { statusCode: 400, body: "imgUrl and title are required" };
@@ -58,7 +58,7 @@ exports.handler = async (event) => {
             text{font-family:'InterBold'}
           </style>
         </defs>
-        <rect width="100%" height="100%" fill="#0a557c"/>
+        <rect width="100%" height="100%" fill="${bannerColor}"/>
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
             dy=".30em"  font-size="${fontSize}" fill="#fff">
           ${safeTitle}
